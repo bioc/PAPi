@@ -1,0 +1,2 @@
+import("svDialogs", "KEGGREST")
+export("papi", "addKeggCodes", "papiHtest", "papiLine")

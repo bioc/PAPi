@@ -1,0 +1,132 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+%\VignetteIndexEntry{Applying PAPi}
+%\VignetteKeywords{preprocess, analysis}
+%\VignettePackage{PAPi}
+\documentclass[12pt]{article}
+
+\usepackage{hyper}
+
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\begin{document}
+\title{Applying the Pathway Activity Profiling - PAPi}
+\author{Raphael Aggio}
+\maketitle
+
+\section*{Introduction}
+
+This document describes how to use the Pathway Activity Profiling - \Rpackage{PAPi}. PAPi is an R package for predicting the activity of metabolic pathways based solely on metabolomics data. It relates metabolites' abundances with the activity of metabolic pathways. See Aggio, R.B.M; Ruggiero, K. and Villas-Boas, S.G. (2010) - Pathway Activity Profiling (PAPi): from metabolite profile to metabolic pathway activity. Bioinformatics.
+\section{Step 1 - Building a local KEGG database: \Rfunction{buildDatabase}}
+PAPi makes use of the information available at the Kyoto Encyclopedia of Genes and Genomes - KEGG database (http://www.genome.jp/kegg/). PAPi can be applied in two ways: online and offline. When applying PAPi online, an internet connection is required to collect online biochemical data from KEGG database. On the other hand, when applied offline, PAPi makes use of a local database and no internet connection is required. As KEGG database is constantly updated, PAPi may produce different results when applied online on different days. Offline, PAPi produces always the same results when using the same local database. PAPi is significantly faster when applied offline. As default, PAPi brings a local database and the function \Rfunction{buildDatabase} can be used to build new local databases. \Rfunction{buildDatabase} uses the internet connection to create and install new databases inside of the folder R.home("library/PAPi/data/databases/"). If save = TRUE, the new database is also installed in a folder defined by the user. The local database consists on two CSV files containing the required data about metabolites and metabolic pathways. \Rfunction{buildDatabase} may take up to ten hours depending on the speed of the internet connection. We highly recommend to build a local database once and do all the required analysis using the same database. Doing so, the results obtained from PAPi can be reproduced at anytime and the time required for each analysis is enormously faster.
+
+\section{Step 2 - Adding KEGG codes to metabolomics data: \Rfunction{addKeggCodes}}
+We consider a typical metabolomics data set: a data frame containing the name of identified metabolites in the first column and their abundances in the different samples in the following columns. Bellow you have an example of a metabolomics data set.
+
+{\footnotesize
+<<LoadMetabolomicsData>>=
+library(PAPi)
+library(svDialogs)
+data(metabolomicsData)
+print(metabolomicsData)
+@
+}
+
+For applying \Rpackage{PAPi}, the name of compounds in the metabolomics data set must be substituted by their respective KEGG codes. This process can be performed manually, however, it may be considerable time consuming according to the size of the input data. The function \Rfunction{addKeggCodes} automates this process using a KEGG codes list, which is a data frame containing all potentially identifiable compound and their respective KEGG codes. See bellow:  
+
+{\footnotesize
+<<LoadKeggLibrary>>=
+data(keggLibrary)
+print(keggLibrary)
+@
+}
+
+The KEGG codes list can be built as a CSV file containing a list of KEGG codes in the first column and their respective compound names in the second column, following the same format as showed above. Alternatively, the data frame data(keggLibrary) can be used. Ideally, the KEGG codes list should contain every compound potentially identifiable by the protocol you use to analyze and identify metabolites. For example, I have in my KEGG codes list the name of every compound present in my GC-MS library.
+The KEGG code of a compound can be searched at KEGG website: http://www.genome.jp/kegg/, however, if the argument addCodes = TRUE, the function \Rfunction{addKeggCodes} will automatically recognize if you have missing compounds - compounds in your input data that are not present in your KEGG codes list. Then, it will ask if you would like to add those compounds to the KEGG codes list in use. If you click on "yes", \Rfunction{addKeggCodes} will automatically search the KEGG database (using the INTERNET connection) for missing compounds. For each missing compound, \Rfunction{addKeggCodes} will present to you a list with all the potential matches from KEGG database. If the right compound is in the list, you just have to click on the compound and click on \Robject{"Ok"}. The KEGG code and the name of this respective compound will be automatically aded to the bottom of your KEGG codes list. On the other hand, if the desired compound is not in the list presented to you, you have two options: go to the end of the list and click on \Robject{"SKIP"}; or go to the end of the list and click on \Robject{"OTHER"}, which will open a new dialog box allowing you to manually add the respective KEGG code. If the compounds' names in the input data are similar to the names used by KEGG database, \Rfunction{addKeggCodes} will find the KEGG code of most compounds. After looking for KEGG codes, \Rfunction{addKeggCodes} gives you the option to save the new KEGG codes list as CSV file and generates a data frame as the input data, however, now with KEGG codes instead of compounds' names. Here is an example of how to used \Rfunction{addKeggCodes} and the result it generates:
+
+{\footnotesize
+<<UsingaddKeggCodes>>=
+print(metabolomicsData)
+print(keggLibrary)
+AddedKegg <- addKeggCodes(
+	metabolomicsData,
+	keggLibrary,
+	save = FALSE,
+	addCodes = TRUE
+)
+print(AddedKegg)
+@
+}
+
+\section{Step 3 - Applying PAPi: \Rfunction{papi}}
+Once the names of metabolites were substituted by their respective KEGG codes, the input data is ready to be analyzed by the function \Rfunction{papi}. Here is an example of how to use \Rfunction{papi} and the results it generates:
+
+{\footnotesize
+<<ApplyingPAPi>>=
+data(papiData)
+print(papiData)
+#papiResults <- papi(papiData, save = FALSE, offline = TRUE, localDatabase = "default")
+data(papiResults)
+head(papiResults)
+@
+}
+
+When offline = TRUE, PAPi is performed using a local database. When localDatabase = "choose", a list of all installed local databases is presented to the user to choose which one to be used.
+
+\section{Step 4 - Applying t-test or ANOVA: \Rfunction{papiHtest}}
+\Rfunction{papiHtest} performs a t-test or ANOVA on the input data, which is a data frame produced by the function \Rfunction{papi}. For identifying to which experimental condition each sample belongs, the first row of the input data may receive the value "Replicates" in the first cell of the first column and a character string indicating to which experimental condition each sample belongs in the following columns, such as described bellow:
+
+{\footnotesize
+<<papiResults>>=
+data(papiResults)
+head(papiResults)
+@
+}
+
+Alternatively, \Rfunction{papiHtest} will ask the user to indicate the samples belonging to each experimental condition. It is all interactive.
+The argument \Robject{StatTest} of \Rfunction{papiHtest} is used to determine if a t-test or an ANOVA should be performed. If \Robject{StatTest} = "T-TEST", "T-test", "t-test", "t-TEST", "t" or "T", a t-test is performed. If \Robject{StatTest} = "ANOVA", "Anova", "anova", "A" or "a", a ANOVA is performed. If \Robject{StatTest} is missing, t-test will be performed for input data sets showing two experimental conditions and ANOVA will be performed for input data sets showing more than two experimental conditions. \Rfunction{papiHtest} can be applied as follows:
+
+{\footnotesize
+<<papiHtest>>=
+head(papiResults)
+ApplyingHtest <- papiHtest(
+	papiResults,
+	save = FALSE,
+	StatTest = "T"
+)
+head(ApplyingHtest)
+@
+}
+
+
+\section{Step 5 - Generating PAPi graph: \Rfunction{papiLine}}
+The results produced by PAPi can be automatically plotted in a line graph using the function \Rfunction{papiLine}. The input data is a data frame such as produced by \Rfunction{papi} and \Rfunction{papiHtest}. \Rfunction{papiLine} was developed to automatically detect graphical parameters, however, some particular data sets may end up in graphs with the legend in the wrong position or axis labels too small. For this reason, \Rfunction{papiLine} has 20 arguments that allow the user to customize most of the graphical parameters. If save = TRUE, a png file will be saved in a folder defined by the user. If save = FALSE, a new window will pop up with the graph and the user can use the R options for saving the graph to a PDF file. Here is an example of how to use \Rfunction{papiLine}: 
+
+{\footnotesize
+<<papiLine>>=
+head(papiResults)
+papiLine(
+	papiResults, 
+	relative = TRUE, 
+	setRef.cond = TRUE, 
+	Ref.cond = "cond1", 
+	save = FALSE
+)
+@
+}
+
+\end{document}
