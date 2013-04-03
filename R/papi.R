@@ -389,7 +389,7 @@ function(inputData, save = TRUE, folder, output = "papi_results", offline = TRUE
     	getpath.final <- numeric()
     	for (i in 1:length(complist)){
       		getpath <- getcomp(complist[i])
-      		if (nrow(getpath)>0){
+      		if (getpath != 0){
         		if(length(getpath.final) == 0){
           			getpath$rate <- as.numeric(data.df[i,2])
           			getpath.final <- getpath
