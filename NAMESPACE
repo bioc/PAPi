@@ -1,2 +1,2 @@
 import("svDialogs", "KEGGREST")
-export("papi", "addKeggCodes", "papiHtest", "papiLine")
+export("papi", "addKeggCodes", "papiHtest", "papiLine", "buildDatabase")
