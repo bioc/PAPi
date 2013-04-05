@@ -458,7 +458,7 @@ function(inputData, save = TRUE, folder, output = "papi_results", offline = TRUE
   	if (save == TRUE) {
     	sheet <- output
     	store <- paste(folder, FolderDivisor, sheet, ".csv", sep = "")
-    	write.csv(papi.frame, file = store, row.names = TRUE)
+    	write.csv(papi.frame, file = store, row.names = FALSE)
     	print(paste("The file ", output, ".csv", " was saved in the folder ", folder, sep=""))   
   	} else {
     	print("No file was saved because the argument save was set as FALSE")
