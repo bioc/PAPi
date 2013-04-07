@@ -1,5 +1,5 @@
 papiLine <-
-function (inputData, relative = TRUE, save=TRUE, folder, output = "papi_graph", setRef.cond = FALSE, Ref.cond, color = "auto",
+function (inputData, relative = TRUE, save=FALSE, folder, output = "papi_graph", setRef.cond = FALSE, Ref.cond, color = "auto",
     cex.xlab, cex.ylab = 1, position.ylab, margins = c(25, 8, 2, 2), yscale, dot.size = 1.5, legend.position, cex.legend = 1,
     graphWidth=3000, graphHeight=2000, graph.bg="transparent", graph.res = 300)
 { 
@@ -299,7 +299,7 @@ if (missing(cex.xlab)){
 		if (ncharacter %in% c(41:55)){
 			cex.xlab <- 1
 		}
-		if (ncharacter > 56){
+		if (ncharacter >= 56){
 			cex.xlab <- 0.8
 		}
 	}
@@ -386,32 +386,60 @@ if (nlevels(reps) == 1){
 		store <- paste(folder,  FolderDivisor, sheet, sep="")
 		png(store, width = graphWidth, height = graphHeight, bg = graph.bg, res = graph.res)
 		par(mar=margins + 0.1, xpd = TRUE)
-	} else {
-		par(mar=margins - c(5,2,0,0), xpd = TRUE)
-		cex.legend = cex.legend - 0.3	
-	}
-	plot(replicate(nrow(avg),0), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		plot(replicate(nrow(avg),0), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
 		for (p in 1:nrow(avg)){		
 			points(p,as.matrix(avg[p,1]), col=color[1], type="h")
 		}
-	lines(as.matrix(avg[1]), type="l", lwd = 3, pch=19, lty=1, col=color[1])
-	axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
-    	axis(2, las=1,cex.axis=1, lwd.ticks = 1)
-    if (save == TRUE){
+		lines(as.matrix(avg[1]), type="l", lwd = 3, pch=19, lty=1, col=color[1])
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1]-2, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)
-	} else {
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		}
+		print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
+		graphics.off()
+		#### For Screen #####
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(replicate(nrow(avg),0), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (p in 1:nrow(avg)){		
+			points(p,as.matrix(avg[p,1]), col=color[1], type="h")
+		}
+		lines(as.matrix(avg[1]), type="l", lwd = 3, pch=19, lty=1, col=color[1])
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1]-4, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
-	}
-	if (length(legend.position) == 2){
-		legend(legend.position[1], legend.position[2], names(avg), cex=cex.legend, col=color[1:ncol(avg)],
-	lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		}
+		######################
 	} else {
-		legend(legend.position, names(avg), cex=cex.legend, col=color[1:ncol(avg)],
-	lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
-	}
-	if (save == TRUE){
-	   graphics.off()
-	   print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(replicate(nrow(avg),0), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (p in 1:nrow(avg)){		
+			points(p,as.matrix(avg[p,1]), col=color[1], type="h")
+		}
+		lines(as.matrix(avg[1]), type="l", lwd = 3, pch=19, lty=1, col=color[1])
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
+		text(position.ylab[1]-4, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, names(avg), cex=cex.legend, col=color[1:ncol(avg)],
+			lty = c(1,1,0,0), title="Conditions", lwd = 3, merge=FALSE)
+		}
 	}
 }
 
@@ -423,12 +451,7 @@ if (nlevels(reps) == 2){
 		store <- paste(folder,  FolderDivisor, sheet, sep="")
 		png(store, width = graphWidth, height = graphHeight, bg = graph.bg, res = graph.res)
 		par(mar=margins + 0.1, xpd = TRUE)
-	} else {
-		par(mar=margins - c(5,2,0,0), xpd = TRUE)
-		cex.legend = cex.legend - 0.3	
-	}
-	par(mar=margins - c(5,2,0,0), xpd = TRUE)
-	plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
 		for (p in 1:nrow(avg)){		
 			if (is.na(avg[p,1])){
 				points(p,0, col=color[1], type="o", pch = 19, cex = dot.size)
@@ -441,26 +464,77 @@ if (nlevels(reps) == 2){
 		for (p in 1:nrow(avg)){		
 			points(p,as.matrix(avg[p,2]), col=color[2], type="h")
 		}
-	axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
-    	axis(2, las=1,cex.axis=1, lwd.ticks = 1)
-	if (save == TRUE){
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1], position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)
-	} else {
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		}
+    		print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
+		graphics.off()
+		###### For Screen ########
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (p in 1:nrow(avg)){		
+			if (is.na(avg[p,1])){
+				points(p,0, col=color[1], type="o", pch = 19, cex = dot.size)
+			}
+			if (is.na(avg[p,2])){
+				points(p,0, col=color[2], type="o", pch = 19, cex = dot.size)
+			}		
+		}
+		lines(as.matrix(avg[2]), type="l", lwd = 3, pch=19, lty=1, col=color[2])
+		for (p in 1:nrow(avg)){		
+			points(p,as.matrix(avg[p,2]), col=color[2], type="h")
+		}
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1]-2, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		}
+    	} else {
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (p in 1:nrow(avg)){		
+			if (is.na(avg[p,1])){
+				points(p,0, col=color[1], type="o", pch = 19, cex = dot.size)
+			}
+			if (is.na(avg[p,2])){
+				points(p,0, col=color[2], type="o", pch = 19, cex = dot.size)
+			}		
+		}
+		lines(as.matrix(avg[2]), type="l", lwd = 3, pch=19, lty=1, col=color[2])
+		for (p in 1:nrow(avg)){		
+			points(p,as.matrix(avg[p,2]), col=color[2], type="h")
+		}
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
+		text(position.ylab[1]-2, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		}
 	}
-	if (length(legend.position) == 2){
-		legend(legend.position[1], legend.position[2], c(names(avg), paste("Not present in", names(avg)[1]),
-		paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
-		lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
-	} else {
-		legend(legend.position, c(names(avg), paste("Not present in", names(avg)[1]),
-		paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
-		lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
-	}
-    if (save == TRUE){
-    	graphics.off()
-    	print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
-    }
 }
 #############################
 ##### If more than two conditions ###
@@ -470,11 +544,7 @@ if (nlevels(reps) > 2){
 		store <- paste(folder,  FolderDivisor, sheet, sep="")
 		png(store, width = graphWidth, height = graphHeight, bg = graph.bg, res = graph.res)
 		par(mar=margins + 0.1, xpd = TRUE)
-	} else {
-		par(mar=margins - c(5,2,0,0), xpd = TRUE)
-		cex.legend = cex.legend - 0.3	
-	}
-	plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
 		for (j in 1:ncol(avg.g)){
 			for (p in 1:nrow(avg)){		
 				if (is.na(avg[p,j])){
@@ -497,25 +567,86 @@ if (nlevels(reps) > 2){
 				points(p,as.matrix(avg[p,i]), col=color[i], type="h")
 			}
 		}
-	axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
-    	axis(2, las=1,cex.axis=1, lwd.ticks = 1)
-	if (save == TRUE){
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1], position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg)),
+      			cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
+			pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg)),
+      			cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
+			pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
+		}
+		print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
+		graphics.off()
+		###### For Screen #######
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (p in 1:nrow(avg)){		
+			if (is.na(avg[p,1])){
+				points(p,0, col=color[1], type="o", pch = 19, cex = dot.size)
+			}
+			if (is.na(avg[p,2])){
+				points(p,0, col=color[2], type="o", pch = 19, cex = dot.size)
+			}		
+		}
+		lines(as.matrix(avg[2]), type="l", lwd = 3, pch=19, lty=1, col=color[2])
+		for (p in 1:nrow(avg)){		
+			points(p,as.matrix(avg[p,2]), col=color[2], type="h")
+		}
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
+		text(position.ylab[1]-2, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg), paste("Not present in", names(avg)[1]),
+			paste("Not present in", names(avg)[2])), cex=cex.legend, col=c(color[1:ncol(avg)], color[1:ncol(avg)]),
+			lty = c(1,1,0,0), pch=c(NA,NA,19,19), title="Conditions", lwd = 3, merge=FALSE)
+		}
 	} else {
+		par(mar=margins - c(5,2,0,0), xpd = TRUE)
+		cex.legend = cex.legend - 0.3	
+		plot(as.matrix(avg.g[1]), type="l", lwd = 3, col=color[1], axes=FALSE, ann=FALSE, lty=1, ylim=yscale)
+		for (j in 1:ncol(avg.g)){
+			for (p in 1:nrow(avg)){		
+				if (is.na(avg[p,j])){
+					points(p,0, col=color[j], type="o", pch = 19, cex = dot.size)
+				}		
+			}
+		}
+		# for (p in 1:nrow(avg)){	
+			# find.na <- t(is.na(avg[p,]))
+			# find.na <- subset(find.na, find.na[1] == "TRUE")
+				# if(nrow(find.na) > 0){
+					# if(find.na[1,1] == "TRUE"){ 	
+						# points(p,0, col=color[1], type="o", pch = 19, cex = dot.size)
+					# }		
+				# }
+		# }
+		for (i in 2:ncol(avg)){
+			lines(as.matrix(avg[i]), type="l", lwd = 3, pch=19, lty=1, col=color[i])
+			for (p in 1:nrow(avg)){		
+				points(p,as.matrix(avg[p,i]), col=color[i], type="h")
+			}
+		}
+		axis(1, at=1:nrow(avg), labels=row.names(avg), las=2, hadj=1, cex.axis=cex.xlab, tck=-.01)
+    		axis(2, las=1,cex.axis=1, lwd.ticks = 1)
 		text(position.ylab[1]-3, position.ylab[2], labels = "Activity Score (AS)", cex = 1.5, srt = 90)		
-	}
-	if (length(legend.position) == 2){
-		legend(legend.position[1], legend.position[2], c(names(avg)),
-      	cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
-		pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
-	} else {
-		legend(legend.position, c(names(avg)),
-      	cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
-		pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
-	}
-	if (save == TRUE){
-   		graphics.off()
-   		print(paste("The file ", output, ".png ", "has been saved in ", folder, sep =""))
+		if (length(legend.position) == 2){
+			legend(legend.position[1], legend.position[2], c(names(avg)),
+      			cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
+			pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
+		} else {
+			legend(legend.position, c(names(avg)),
+      			cex=cex.legend, col=c(color[1:ncol(avg)], color[1]), lty = c(replicate(ncol(avg), 1), 0), 
+			pch=c(replicate(ncol(avg), NA)), title="Conditions", lwd = 3, merge=FALSE)
+		}
 	}
 }
 #############################
