@@ -76,6 +76,7 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 			htest2$pvalues[i] <- list.p[t]
 			t <- t + 11
 		}
+		names(htest2) <- names(rest)
 		htest3 <- rbind(htest2, rest)
 		HtestData <- merge(HtestData, htest3[ncol(htest3)], by = 0)
 		HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
@@ -116,6 +117,7 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 			htest2$pvalues[i] <- pvalues[1, t]
 			t <- t + 5
 		}
+		names(htest2) <- names(rest)
 		htest3 <- rbind.data.frame(htest2, rest)
 		HtestData <- merge(HtestData, htest3[ncol(htest3)], by = 0)
 		HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
