@@ -1,5 +1,5 @@
 papiHtest <-
-function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, folder, StatTest, output) {
+function(inputData, signif.level = 0.05, log.transform = TRUE, save = TRUE, folder, StatTest, output, adjust.pValue = TRUE, method = "bonferroni") {
 	## Function to check if file is CSV ##
 	isCSVdlg <- function(titleMSG, errorMSG) {
 		t = 0
@@ -35,17 +35,9 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 	}
 	#########################################################
     
-    #### Check if the OS is Widnows ###
-    OSsystem <- Sys.info()["sysname"]
-    if (OSsystem == "Windows"){
-        FolderDivisor <- "\\"
-    } else {
-        FolderDivisor <- "/"
-    }
-    
 	#### t-test ##########
 	test.t <- function() {
-		cat(paste("t-test is in progress..", "\n"))
+		message(paste("t-test is in progress..", "\n"))
 		htest <- HtestData[-1]
 		missing <- t(apply(htest, 1, function(y) tapply(as.numeric(y), reps, function(x) sum(!is.na(x)))))
 		missing2 <- apply(t(apply(missing, 1, function(x) x < 2)), 1, sum)
@@ -53,14 +45,14 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 		rest <- htest[missing2 == 1, ]
 		if (nrow(rest) != 0) {
 			rest$pvalues <- 0
-		}
-		if (log.transform == TRUE) {
+		} 
+		if (log.transform) {
 			negative <- htest2
 			negative[is.na(negative)] = 0
 			negative <- data.frame(apply(negative, 1, function(x) sum(x < 0)))
 			negative <- apply(negative, 2, function(x) sum(x > 0))
 			if (negative > 0) {
-				print("log.transform was set to TRUE. However, you have negative values in your input data and it is not possible to calculate the log of a negative value. Thus, the test will be performed with no log transformation.")
+				message("log.transform was set to TRUE. However, you have negative values in your input data and it is not possible to calculate the log of a negative value. Thus, the test will be performed with no log transformation.")
 			} else {
 				htest2[is.na(htest2)] <- 0
 				htest2 <- data.matrix(htest2)
@@ -76,18 +68,22 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 			htest2$pvalues[i] <- list.p[t]
 			t <- t + 11
 		}
-		names(htest2) <- names(rest)
-		htest3 <- rbind(htest2, rest)
+		if (nrow(rest) != 0) {
+			names(htest2) <- names(rest)
+			htest3 <- rbind(htest2, rest)
+		} else {
+			htest3 <- htest2
+		}
 		HtestData <- merge(HtestData, htest3[ncol(htest3)], by = 0)
-		HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
+		#HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
 		HtestData[1] <- NULL
 		return(HtestData)
-		cat("Done.\n")
+		message("Done.\n")
 	}
 
 	#### ANOVA ###########
 	anova.t <- function() {
-		cat(paste("ANOVA is in progress..", "\n"))
+		message(paste("ANOVA is in progress..", "\n"))
 		htest <- HtestData[-1]
 		missing <- t(apply(htest, 1, function(y) tapply(as.numeric(y), reps, function(x) sum(!is.na(x)))))
 		missing2 <- apply(t(apply(missing, 1, function(x) x < 2)), 1, sum)
@@ -96,13 +92,13 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 		if (nrow(rest) != 0) {
 			rest$pvalues <- 0
 		}
-		if (log.transform == TRUE) {
+		if (log.transform) {
 			negative <- htest2
 			negative[is.na(negative)] = 0
 			negative <- data.frame(apply(negative, 1, function(x) sum(x < 0)))
 			negative <- apply(negative, 2, function(x) sum(x > 0))
 			if (negative > 0) {
-				print("log.transform was set to TRUE. However, you have negative values in your input data and it is not possible to calculate the log of a negative value. Thus, the test will be performed with no log transformation.")
+				message("log.transform was set to TRUE. However, you have negative values in your input data and it is not possible to calculate the log of a negative value. Thus, the test will be performed with no log transformation.")
 			} else {
 				htest2 <- data.matrix(htest2)
 				htest2 <- log10(htest2)
@@ -117,88 +113,84 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 			htest2$pvalues[i] <- pvalues[1, t]
 			t <- t + 5
 		}
-		names(htest2) <- names(rest)
-		htest3 <- rbind.data.frame(htest2, rest)
+		if (nrow(rest) != 0) {
+			names(htest2) <- names(rest)
+			htest3 <- rbind.data.frame(htest2, rest)
+		} else {
+			htest3 <- htest2
+		}
 		HtestData <- merge(HtestData, htest3[ncol(htest3)], by = 0)
-		HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
+		#HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
 		HtestData[1] <- NULL
 		return(HtestData)
-		cat("Done.\n")
+		message("Done.\n")
 	}
 
 	## Begin collecting arguments
 	if (missing(inputData)) {
 		inputData <- isCSVdlg("Select the CSV file containing the input data", "The input file MUST be in the format of comma-separated value (csv). Please, choose an input file showing the extension .csv.")
-		HtestData <- read.csv(inputData, colClasses = "character")
-		print("Input file loaded...")
+		HtestData <- read.csv(inputData, colClasses = "character", check.names = FALSE)
+		message("Input file loaded...")
 	} else {
-		if (is.data.frame(inputData) == TRUE) {
+		if (is.data.frame(inputData)) {
 			HtestData <- inputData
-			print("Data frame loaded...")
+			message("Data frame loaded...")
 		} else {
 			if (is.character(inputData)) {
 				checkIfCsv <- isCSV(inputData)
 				if (checkIfCsv == 1) {
 					inputTest <- file.access(inputData, 0)
 					if (inputTest == 0) {
-						HtestData = read.csv(inputData, colClasses = "character")
+						HtestData = read.csv(inputData, colClasses = "character", check.names = FALSE)
 					} else {
-						dlgMessage("The input file specified is not accessible. Please, choose a valid CSV file to be used as input data.")
 						inputData <- isCSVdlg("Select the CSV file containing the input data", "The input file MUST be in the format of comma-separated value (csv). Please, choose an input file showing the extension .csv.")
-						HtestData <- read.csv(inputData, colClasses = "character")
-						print("Input file loaded...")
+						HtestData <- read.csv(inputData, colClasses = "character", check.names = FALSE)
+						message("Input file loaded...")
 					}
 				} else {
-					dlgMessage("The input file specified is not in CSV format. Please, choose a valid CSV file to be used as input data.")
 					inputData <- isCSVdlg("Select the CSV file containing the input data", "The input file MUST be in the format of comma-separated value (csv). Please, choose an input file showing the extension .csv.")
-					HtestData <- read.csv(inputData, colClasses = "character")
-					print("Input file loaded...")
+					HtestData <- read.csv(inputData, colClasses = "character", check.names = FALSE)
+					message("Input file loaded...")
 				}
 			} else {
-				dlgMessage("The path to the input data must be specified as character string. Please, choose a valid CSV file to be used as input data.")
 				inputData <- isCSVdlg("Select the CSV file containing the input data", "The input file MUST be in the format of comma-separated value (csv). Please, choose an input file showing the extension .csv.")
-				HtestData <- read.csv(inputData, colClasses = "character")
-				print("Input file loaded...")
+				HtestData <- read.csv(inputData, colClasses = "character", check.names = FALSE)
+				message("Input file loaded...")
 			}
 		}
 	}
 
-	if (save == TRUE) {
+	if (save) {
 		if (missing(folder)) {
-			print("No folder was defined to save the results.")
-			print("Please, point to the folder where the results should be saved.")
 			folder = dlgDir(title = "Select the folder where the output file will be saved.")$res
 		} else {
-			if (is.character(inputData)) {
+			if (is.character(folder)) {
 				isFolder <- file.access(as.character(folder), 0)
 				if (isFolder == 0) {
 					isFolder <- file.info(folder)
-					if (isFolder$isdir != TRUE) {
-						print("The folder defined to save the results is not a valid path.")
-						print("Please, point to the folder where the results should be saved.")
+					if (!isFolder$isdir) {
+						message("The folder defined to save the results is not a valid path.")
 						folder = dlgDir(title = "Select the folder where the output file will be saved.")$res
 					}
 				} else {
-					print("The folder defined to save the results is not a valid path.")
-					print("Please, point to the folder where the results should be saved.")
+					message("The folder defined to save the results is not a valid path.")
 					folder = dlgDir(title = "Select the folder where the output file will be saved.")$res
 				}
 			} else {
-				print("The path to the folder where the results will be saved must be specified as character.")
-				print("Please, point to the folder where the results should be saved.")
+				message("The path to the folder where the results will be saved must be specified as character.")
 				folder = dlgDir(title = "Select the folder where the output file will be saved.")$res
 			}
 		}
 	}
 
-	if (HtestData[1, 1] %in% c("Replicates", "Replicate", "replicates", "replicate")) {
+	if (toupper(HtestData[1, 1]) == "REPLICATES") {
 		replicates <- as.character(HtestData[1, ])
 		HtestData <- HtestData[-1, ]
 		rep <- 1
 		reps <- factor(replicates[-1])
 	} else {
 		# Indicate replicates
-		dlgMessage("For a faster process of pipeLine, the first row of the input data can be used to indicate which experimental condition each sample bellongs to. For this, in the inputData you must add a new row below the header and fill it with the following information: the word 'Replicates' in the first column and the name of the experiemntal condition correponding to each sample (or replicate) in the following columns. See data(papiResults) for an example of input data.")
+		message("For a faster process of pipeLine, the first row of the input data can be used to indicate which experimental condition each sample bellongs to. For this, in the inputData you must add a new row below the header and fill it with the following information: the word 'Replicates' in the first column and the name of the experiemntal condition correponding to each sample (or replicate) in the following columns. See data(papiResults) for an example of input data.")
 		HtestData <- rbind(c("Replicates", 2:ncol(HtestData)), HtestData)
 		conditions <- as.numeric(dlgList(1:1000, title = "How many experimental conditions?")$res)
 		samples <- names(HtestData)
@@ -234,7 +226,7 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 				HtestData <- test.t()
 				testDone <- "ttest"
 			} else {
-				dlgMessage(paste("Sorry, ", StatTest, " is not an option for htest. Please select one of the options that will appear to you. Next time, you can use one of the following entries: ANOVA, Anova, anova, A and a for ANOVA; or T-TEST, T-test, t-test, t-TEST, t and T for a t-test", 
+				message(paste("Sorry, ", StatTest, " is not an option for htest. Please select one of the options that will appear to you. Next time, you can use one of the following entries: ANOVA, Anova, anova, A and a for ANOVA; or T-TEST, T-test, t-test, t-TEST, t and T for a t-test",
 					sep = ""))
 				option.test <- dlgList(c("ANOVA", "t-test"))$res
 				if (option.test == "ANOVA") {
@@ -247,18 +239,35 @@ function(inputData, signif.level = 0.05, log.transform = FALSE, save = TRUE, fol
 			}
 		}
 	}
-	if (rep == 1) {
-		HtestData <- rbind(c(replicates, NA), HtestData)
+	if (adjust.pValue){
+		HtestData[ncol(HtestData)] <- p.adjust(as.numeric(HtestData[,ncol(HtestData)]), method = method)
+		adjustMethod <- method
+	} else {
+		adjustMethod <- "Not-adjusted"
 	}
-	if (save == TRUE) {
+	HtestData <- subset(HtestData, as.numeric(HtestData$pvalues) < signif.level)
+	HtestData <- HtestData[order(HtestData[, 1], decreasing = FALSE), ]
+	if (rep == 1) {
+		HtestData <- rbind(c(replicates, adjustMethod), HtestData)
+	}
+	if (save) {
 		if (missing(output)){
 			sheet <- testDone
 		} else {
 			sheet <- output
 		}
-		store <- paste(folder, FolderDivisor, sheet, ".csv", sep = "")
-		write.csv(HtestData, file = store, row.names = FALSE)
-		print(paste("The file ", paste(sheet, ".csv", sep = ""), " was saved in the folder ", folder))
+		store <- file.path(folder, paste(sheet, ".csv", sep = ""))
+      	inputTest <- file.access(store, 0)
+      	if (inputTest == 0) {
+      		addFile <- 1
+      		while(inputTest == 0){
+      			store <- file.path(folder, paste(sheet, addFile, ".csv", sep = ""))
+      			inputTest <- file.access(store, 0)
+      			addFile <- addFile + 1
+      		}
+      	}
+      	write.csv(HtestData, file = store, row.names = FALSE)
+		message("File saved: ", store, "\n")
 	}
 	return(HtestData)
 }
