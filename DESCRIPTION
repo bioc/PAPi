@@ -1,8 +1,8 @@
 Package: PAPi
 Type: Package
 Title: Predict metabolic pathway activity based on metabolomics data
-Version: 1.6.0
-Date: 2013-03-27
+Version: 1.6.1
+Date: 2015-03-22
 Author: Raphael Aggio
 Maintainer: Raphael Aggio <raphael.aggio@gmail.com>
 Description: The Pathway Activity Profiling - PAPi - is an R package for predicting the activity of metabolic pathways based solely on a metabolomics data set containing a list of metabolites identified and their respective abundances in different biological samples. PAPi generates hypothesis that improves the final biological interpretation. See Aggio, R.B.M; Ruggiero, K. and Villas-Boas, S.G. (2010) - Pathway Activity Profiling (PAPi): from metabolite profile to metabolic pathway activity. Bioinformatics.

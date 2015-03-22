@@ -274,7 +274,7 @@ function(inputData, save = TRUE, folder, output = "papi_results", offline = TRUE
         print("Please, point to the folder where the results should be saved.")
         folder = dlgDir(title = "Select the folder where the output file will be saved.")$res
   	} else {
-  		if (is.character(inputData)){
+  		if (is.character(folder)){
 			isFolder <- file.access(as.character(folder), 0)
   			if (isFolder == 0){
       			isFolder <- file.info(folder)
