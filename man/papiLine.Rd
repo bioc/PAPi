@@ -8,7 +8,7 @@ papiLine generates a line graph of results obtained using \code{\link{papi}} or 
 papiLine generates a line graph of the average Activity Score (AS) against the predicted metabolic pathways.
 }
 \usage{
-papiLine(inputData, relative = TRUE, save=TRUE, folder, output = "papi_graph", 
+papiLine(inputData, relative = TRUE, save=FALSE, folder, output = "papi_graph", 
 setRef.cond = FALSE, Ref.cond, color = "auto", cex.xlab, cex.ylab = 1, 
 position.ylab, margins = c(25, 8, 2, 2), yscale, dot.size = 1.5, 
 legend.position, cex.legend = 1, graphWidth=3000, graphHeight=2000, 
