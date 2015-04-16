@@ -1,7 +1,7 @@
 Package: PAPi
 Type: Package
 Title: Predict metabolic pathway activity based on metabolomics data
-Version: 1.8.0
+Version: 1.9.0
 Date: 2013-03-27
 Author: Raphael Aggio
 Maintainer: Raphael Aggio <raphael.aggio@gmail.com>
